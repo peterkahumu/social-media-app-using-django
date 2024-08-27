@@ -4,21 +4,61 @@ from django.contrib import messages
 from .models import *
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from itertools import chain
+import random
 
 
 # ensure that the user is logged in if they are not.
 @login_required(login_url='/signin')
 # Create your views here.
-def index(request):
+def index(request): 
     user_object = User.objects.get(username = request.user.username)
     user_profile = Profile.objects.get(user = user_object)
    
+    user_following_list  = []
+    feed = [] # post of the individuals the user is following.
     
-    posts = Post.objects.all()
+    user_following = FollowersCount.objects.filter(follower = request.user.username)
+    
+    for users in user_following:
+            user_following_list.append(users.user)
+        
+    for username in user_following_list:
+        feed_lists  = Post.objects.filter(user = username)
+        feed.append(feed_lists)
+        
+    feed_list = list(chain(*feed))
+        
+    # user suggestions.
+    all_users = User.objects.all()
+    user_following_all = [] # all the individuals is already following.
+    
+    for user in user_following:
+        user_list = User.objects.get(username = user.user)
+        user_following_all.append(user_list)
+        
+    new_suggestions_list = [x for x in list(all_users) if (x not in list(user_following_all))]
+    current_user = User.objects.filter(username = request.user.username)
+    final_suggestions_list = [x for x in (new_suggestions_list) if (x not in list(current_user))] # everyone we are not following and is not the current user.
+    random.shuffle(final_suggestions_list)
+
+    username_profile = []
+    username_profile_list = []
+    
+    for users in final_suggestions_list:
+        username_profile.append(users.id)
+        
+    for ids in username_profile:
+        profile_lists = Profile.objects.filter(id_user = ids)
+        username_profile_list.append(profile_lists)
+        
+    suggestions_username_profile_list = list(chain(*username_profile_list))
+    
     
     context = {
         'user_profile': user_profile,
-        'posts': posts
+        'posts': feed_list,
+        'suggestions_username_profile_list': suggestions_username_profile_list
     }
     return render(request, 'index.html', context)
 
@@ -108,9 +148,8 @@ def settings(request):
             user_profile.profileimg = image
             user_profile.bio = bio
             user_profile.location = location
-            user_profile.save()
-        
-        return redirect('/settings')
+            user_profile.save()        
+        return redirect(f'/profile/{user_profile.user.username}')
     return render(request, 'settings.html', context)
 
 # hanle uploading of posts.
@@ -122,10 +161,7 @@ def upload(request):
         caption = request.POST['caption']
         
         new_post = Post.objects.create(user=user, image=image, caption = caption)
-        if new_post.save():
-            messages.success(request, "Post uploaded successfully.")
-        else:
-            messages.info(request, "Error uploading you post. Please try again later.")
+        new_post.save()
         return redirect('/')
     else:
         return redirect('/')
@@ -161,10 +197,73 @@ def profile(request, pk):
     user_posts = Post.objects.filter(user = pk)
     no_of_posts = len(user_posts)
     
+    # get the individuals being followed by the user.
+    follower = request.user.username
+    user = pk 
+    
+    if FollowersCount.objects.filter(follower = follower, user = user).first():
+        button_text = 'unfollow'
+    else:
+        button_text = 'follow'
+        
+    # get the number of number of people following the user, and those the user is following.
+    user_followers = len(FollowersCount.objects.filter(user=pk))
+    user_following = len(FollowersCount.objects.filter(follower=pk))
+    
     context = {
         'user_object': user_object,
         'user_profile': user_profile,
-        'no_of_posts': no_of_posts    
+        'user_posts': user_posts,
+        'no_of_posts': no_of_posts,
+        'button_text': button_text,
+        'user_followers': user_followers,
+        'user_following': user_following 
     }
     return render(request, 'profile.html', context)
+
+@login_required(login_url = '/signin')
+def follow(request):
+    if request.method == 'POST':
+        follower = request.POST['follower']
+        user = request.POST['user']
+        
+        # check if the user is already following the individual.
+        if FollowersCount.objects.filter(follower = follower, user = user).first():
+            delete_follower = FollowersCount.objects.get(follower = follower, user = user)
+            delete_follower.delete()
+            return redirect(f'/profile/{user}')
+        else:
+            new_follower = FollowersCount.objects.create(follower = follower, user = user)
+            new_follower.save()
+            return redirect(f'/profile/{user}')
+    else:
+        return redirect('/')
     
+@login_required(login_url = '/signin')
+def search(request):
+    user_object = User.objects.get(username = request.user.username)
+    user_profile = Profile.objects.get(user = user_object)
+         
+    if request.method == 'POST':
+        username = request.POST['username']
+        username_object = User.objects.filter(username__icontains = username)
+        
+        username_profile = []
+        username_profile_list = []
+        
+        for users in username_object :
+            username_profile.append(users.id)
+            
+        for ids in username_profile: 
+            profile_lists = Profile.objects.filter(id_user = ids)
+            username_profile_list.append(profile_lists)
+        
+        username_profile_list = list(chain(*username_profile_list))
+         
+        
+    context = {
+        'user_profile': user_profile,
+        'username_profile_list': username_profile_list,
+    }
+        
+    return render(request, 'search.html', context)

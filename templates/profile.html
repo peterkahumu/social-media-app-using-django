@@ -2,8 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
-
+ 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,15 +31,15 @@
 				{% csrf_token %}
 				<div class="add-btn">
 					<a href="/"><span style="color: white; font: 27px;"><b>Back to home</b></span></a>
-					{% if user_post_length == 0 %}
+					{% if no_of_posts == 0 %}
 					<span style="color: white; font-size: 27px;"><b>No Post</b></span>
-					{% elif user_post_length == 1 %}
-					<span style="color: white; font-size: 27px;"><b>{{user_post_length}} Post</b></span>
+					{% elif no_of_posts == 1 %}
+					<span style="color: white; font-size: 27px;"><b>{{no_of_posts}} Post</b></span>
 					{% else %}
-					<span style="color: white; font-size: 27px;"><b>{{user_post_length}} Posts</b></span>
+					<span style="color: white; font-size: 27px;"><b>{{no_of_posts}} Posts</b></span>
 					{% endif %}
 
-					{% if user_followers == 0 or user_followers == 1 %}
+					{% if user_followers == 1 %}
 					<span style="color: white; font-size: 27px;"><b>{{user_followers}} follower</b></span>
 					{% else %}
 					<span style="color: white; font-size: 27px;"><b>{{user_followers}} followers</b></span>
@@ -56,12 +55,12 @@
 					<a href="/settings" data-ripple="">Account Settings</a>
 					{% else %}
 					<a data-ripple=""><button type="submit"
-							style="background-color: #ffc0cb; border: #ffc0cb;">{{button_text}}</button></a>
+						style="background-color: #ffc0cb; border: #ffc0cb;">{{button_text}} </button></a>
 					{% endif %}
 
 				</div>
 			</form>
-<!-- 		<form class="edit-phto">
+			<!-- 		<form class="edit-phto">
 				<i class="fa fa-camera-retro"></i>
 				<label class="fileContainer">
 					Upload Cover Photo
@@ -76,10 +75,10 @@
 								<img src="{{user_profile.profileimg.url}}" style="height: 250px; width: 100%;" alt="">
 								{% if user_object.username == user.username %}
 								<form class="edit-phto">
-										<i class="fa fa-camera-retro"></i>
-										<label class="fileContainer">
-											<a href="#account-settings">Upload Profile Photo</a>
-										</label>
+									<i class="fa fa-camera-retro"></i>
+									<label class="fileContainer">
+										<a href="#account-settings">Upload Profile Photo</a>
+									</label>
 								</form>
 								{% endif %}
 							</figure>
@@ -137,15 +136,6 @@
 								</aside>
 							</div><!-- sidebar -->
 
-
-
-
-
-
-
-
-
-
 							<div class="col-lg-6">
 								<div class="central-meta">
 									<ul class="photos">
@@ -158,9 +148,6 @@
 													alt=""></a>
 										</li>
 										{% endfor %}
-
-
-
 									</ul>
 									<!--<div class="lodmore"><button class="btn-view btn-load-more"></button></div>-->
 								</div><!-- photos -->
