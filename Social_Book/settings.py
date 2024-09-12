@@ -24,9 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # get the security key from the .env file.
-from dotenv import load_dotenv
-load_dotenv()
-SECRET_KEY = os.environ["SECRET_KEY"]
+
+SECRET_KEY = 'django-insecure-#(7!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
