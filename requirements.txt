@@ -5,4 +5,4 @@ gunicorn==23.0.0
 requests==2.32.3
 psycopg2-binary==2.9.6  # PostgreSQL adapter for Python
 django-heroku==0.3.1    # Helps with configuring Django setting for Herok
-dotenv==0.19.1          # Helps with loading environment variables from a .env file
+dotenv==0.0.5          # Helps with loading environment variables from a .env file
